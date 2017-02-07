@@ -83,4 +83,12 @@ class HoneycombOutput < Test::Unit::TestCase
     assert_equal "test", @events[0]["my_custom_tag_key_name"]
   end
 
+  def test_non_hash_records_skipped
+    driver('test', defaultconfig)
+    hny_request = stub_hny()
+    driver.emit('not_json')
+    driver.run
+    assert_not_requested(hny_request)
+  end
+
 end
