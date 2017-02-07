@@ -20,7 +20,7 @@
 Parameter | Type | Required? | Description
 | --- | --- | --- | --- |
 | `writekey` | string | yes | Your Honeycomb write key. |
-| `dataset | string | yes | The name of the destination dataset in your Honeycomb account. |
+| `dataset` | string | yes | The name of the destination dataset in your Honeycomb account. |
 | `sample_rate` | integer | no | Sample your event stream by sending 1 out of every N events. |
 | `include_tag_key` | bool | no | Whether to include the Fluentd tag in the submitted event. |
 | `tag_key` | string | no | If `include_tag_key` is `true`, the tag key name in the event (default: `fluentd_tag`).
