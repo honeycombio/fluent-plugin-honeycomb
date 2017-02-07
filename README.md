@@ -50,3 +50,11 @@ fluentd -c ./fluent/fluent.conf -v
 ```
 
 A note about naming: This gem must be named `fluent-plugin-xxx` in order to automatically be included in Fluentd's plugin list. See http://www.fluentd.org/faqs.
+
+## Releasing a new version
+Travis will automatically upload tagged releases to Rubygems. To release a new
+version, run
+```
+bump patch --tag   # Or bump minor --tag, etc.
+git push --tags
+```

@@ -2,3 +2,11 @@ language: ruby
 
 rvm:
   - 2.2
+
+deploy:
+  provider: rubygems
+  api_key:
+    secure: XH0/YaToo890z8rZ4bqpYmzDw4KVzU1DJjVno6kG1z5ji3+yCd8lsHnb+5G096RBqPqFqlZdYxf5RX4Xb5NKufj5Ecn/5MAsTvnvUPVgFLIwGRy7c5HezrBJ3fciC2fGbnIi6QeI9KrGbfPhIQ1uuywwTOqnCd/8jguemejKrAGP32+OnrnHdD5I+bqTViNXbvoV3WVCEsXN7KCjNDgLJYmOzTk/0m79P7VOUD8VJsf2hT6TSnrIRemkg26UsVXzJ7au2QcRSCPsd/uPJ+AGlrhyGx0ua+hyIcRj/31n9cobsin+OsGOlACvC3CPIaE8hM7c99M7Xlp6YcPCS11huoPAXP/HAwBC1zgQOPd5XtUruHfwUcgDnxUmVo2treQ3hqcn6fZW2pEu8nCYh26jgAvTTS68a8VU8hgGcb5rHH5E9Vg6djAihlKrJPh5VYeoo+TkIaVOjFkyP1K1g9Opb5MJU59ECp7uItsFvzehXr1+0d+SUBwdFjMHSPUjyeWgt3yyfOwf2EnctOWnttgmxLLb0aivfuipZcFk+712fitBXAXoksTLl6/UjrYNrE0reVOgRY/xZ507ZGR5HpzjA9xcKQpK/A0Boqi1dCfV654um//wgzJESLkixrhGNh629uHamIdKLle53yn3htR5I5VEldhu3R4qb2wBtcJ0xhY=
+  gem: fluent-plugin-honeycomb
+  on:
+    tags: true
