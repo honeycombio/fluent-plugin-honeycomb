@@ -3,8 +3,8 @@ Gem::Specification.new do |spec|
   spec.version     = '0.1.2'
   spec.date        = '2017-02-07'
 
-  spec.summary     = "send data to Honeycomb"
-  spec.description = "Ruby gem for sending data to Honeycomb"
+  spec.summary     = "Fluentd output plugin for Honeycomb.io"
+  spec.description = "Fluentd output plugin for Honeycomb.io"
   spec.authors     = ['The Honeycomb.io Team']
   spec.email       = 'support@honeycomb.io'
   spec.files       = []
