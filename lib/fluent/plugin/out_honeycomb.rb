@@ -58,14 +58,14 @@ module Fluent
     def write(chunk)
       chunk.msgpack_each do |(tag, time, record)|
         if !record.is_a? Hash
-          $log.debug "Skipping record #{record}"
+          log.debug "Skipping record #{record}"
           next
         end
         if @include_tag_key
           record[@tag_key] = tag
         end
         @client.send_now(record)
-        $log.debug "Sent record #{record}"
+        log.debug "Sent record #{record}"
       end
     end
   end
