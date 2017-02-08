@@ -32,10 +32,6 @@ Parameter | Type | Required? | Description
 
 `fluent-plugin-honeycomb` supports the [standard configuration options](http://docs.fluentd.org/v0.12/articles/buffer-plugin-overview) for buffered output plugins.
 
-## Limitations
-
-`fluent-plugin-honeycomb` does not currently batch events. This functionality should be implemented in `libhoney-rb`.
-
 ## Development
 I recommend using [rbenv](https://github.com/rbenv/rbenv) for development.
 

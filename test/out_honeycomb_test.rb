@@ -1,7 +1,8 @@
 require 'date'
-require 'test/unit'
-require 'fluent/test'
-require 'webmock/test_unit'
+require 'helper'
+#require 'test/unit'
+#require 'fluent/test'
+#require 'webmock/test_unit'
 
 class HoneycombOutput < Test::Unit::TestCase
   attr_accessor :index_cmds, :index_command_counts
@@ -26,14 +27,24 @@ class HoneycombOutput < Test::Unit::TestCase
   end
 
   def sample
-    {"status":200,"path":"/docs/","latency_ms":13.1,"cached":false}
+    {"status" => 200,"path" => "/docs/","latency_ms" => 13.1,"cached" => false}
   end
 
-  def stub_hny(url="https://api.honeycomb.io/1/events/testdataset")
+  def stub_hny(url="https://api.honeycomb.io/1/batch")
     stub_request(:post, url).
       to_return(:status => 200, :body => 'OK').with do |req|
         @events = req.body.split("\n").map {|r| JSON.parse(r) }
     end
+  end
+
+  def send_helper(extra_opts, inputs, request_bodies)
+    config = defaultconfig + "\n" + extra_opts
+    driver('test', config)
+    hny_request = stub_hny()
+    inputs.each { |i| driver.emit(i) }
+    driver.run
+    assert_requested(hny_request)
+    assert_equal @events, request_bodies
   end
 
   def test_configure
@@ -49,38 +60,49 @@ class HoneycombOutput < Test::Unit::TestCase
     assert_equal 'testdataset', instance.dataset
   end
 
-  def test_send
-    driver('test', defaultconfig())
-    hny_request = stub_hny()
-
-    driver.emit(sample())
-    driver.run
-    assert_requested(hny_request)
-  end
-
   def test_send_with_fluentd_tag_key
-    config = defaultconfig + %{
-      include_tag_key true
-    }
-    driver('test', config)
-    hny_request = stub_hny()
-    driver.emit(sample())
-    driver.run
-    assert_requested(hny_request)
-    assert_equal "test", @events[0]["fluentd_tag"]
+    extra_opts = "include_tag_key true"
+    inputs = [{"a" => "b", "c" => 22}]
+    request_bodies = [
+      {
+        "testdataset" => [
+          {"data" => {"a" => "b", "c" => 22, "fluentd_tag" => "test"},
+           "samplerate" => 1}
+        ]
+      }
+    ]
+    send_helper(extra_opts, inputs, request_bodies)
   end
 
   def test_send_with_custom_fluentd_tag_key
-    config = defaultconfig + %{
+    extra_opts = %{
       include_tag_key true
       tag_key my_custom_tag_key_name
     }
-    driver('test', config)
-    hny_request = stub_hny()
-    driver.emit(sample())
-    driver.run
-    assert_requested(hny_request)
-    assert_equal "test", @events[0]["my_custom_tag_key_name"]
+    inputs = [{"a" => "b", "c" => 22}]
+    request_bodies = [
+      {
+        "testdataset" => [
+          {"data" => {"a" => "b", "c" => 22, "my_custom_tag_key_name" => "test"},
+           "samplerate" => 1}
+        ]
+      }
+    ]
+    send_helper(extra_opts, inputs, request_bodies)
+  end
+
+  def test_batching
+    inputs = [{"a" => "b", "c" => 22},
+              {"q" => "r", "s" => "t"}]
+    request_bodies = [
+      {
+        "testdataset" => [
+          {"data" => {"a" => "b", "c" => 22}, "samplerate" => 1},
+          {"data" => {"q" => "r", "s" => "t"}, "samplerate" => 1}
+        ]
+      }
+    ]
+    send_helper("", inputs, request_bodies)
   end
 
   def test_non_hash_records_skipped
@@ -91,4 +113,13 @@ class HoneycombOutput < Test::Unit::TestCase
     assert_not_requested(hny_request)
   end
 
+  def test_retry
+    driver('test', defaultconfig)
+    stub_request(:post, "https://api.honeycomb.io/1/batch").
+      to_return(:status => 500)
+    driver.emit({"a" => "b"})
+    assert_raise Exception do
+      driver.run
+    end
+  end
 end

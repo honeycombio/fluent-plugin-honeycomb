@@ -16,14 +16,16 @@ Gem::Specification.new do |spec|
   end
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = '>= 2.2.0'
+  spec.required_ruby_version = '>= 2.1.0'
 
-  spec.add_runtime_dependency "libhoney", "~> 1.0"
   spec.add_runtime_dependency "fluentd", "~> 0.12"
+  spec.add_runtime_dependency "http", "~> 2.0"
 
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "webmock", "~> 2.1"
   spec.add_development_dependency "test-unit"
+  spec.add_development_dependency "simplecov"
+  spec.add_development_dependency "coveralls"
   spec.add_development_dependency "bump"
 end

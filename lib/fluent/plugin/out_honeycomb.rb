@@ -1,5 +1,6 @@
+require 'json'
+require 'http'
 require 'fluent/output'
-require 'libhoney'
 
 module Fluent
   class HoneycombOutput < BufferedOutput
@@ -30,18 +31,12 @@ module Fluent
     # Open sockets or files here.
     def start
       super
-      @client = Libhoney::Client.new(:writekey => @writekey,
-                                     :dataset => @dataset,
-                                     :sample_rate => @sample_rate,
-                                     :api_host => @api_host)
     end
 
     # This method is called when shutting down.
     # Shutdown the thread and close sockets or files here.
     def shutdown
       super
-      # Drain libhoney request queue before shutting down.
-      @client.close(true)
     end
 
     def format(tag, time, record)
@@ -56,6 +51,7 @@ module Fluent
     #
     # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
     def write(chunk)
+      batch = []
       chunk.msgpack_each do |(tag, time, record)|
         if !record.is_a? Hash
           log.debug "Skipping record #{record}"
@@ -64,8 +60,55 @@ module Fluent
         if @include_tag_key
           record[@tag_key] = tag
         end
-        @client.send_now(record)
-        log.debug "Sent record #{record}"
+        batch.push({
+            "data" => record,
+            "samplerate" => @sample_rate
+        })
+      end
+
+      if batch.length == 0
+        return
+      end
+      log.info "publishing #{batch.length} records"
+      body = JSON.dump({ @dataset => batch })
+      resp = HTTP.headers(
+          "User-Agent" => "fluent-plugin-honeycomb",
+          "Content-Type" => "application/json",
+          "X-Honeycomb-Team" => @writekey)
+          .post(URI.join(@api_host, "/1/batch"), {
+              :body => body,
+          })
+      parse_response(resp)
+    end
+
+    def parse_response(resp)
+      if resp.status != 200
+        # Force retry
+        raise Exception.new("Error sending batch: #{resp.status}, #{resp.body}")
+      else
+        begin
+          results = JSON.parse(resp.body)
+        rescue JSON::ParserError => e
+          log.warn "Error parsing response as JSON: #{e}"
+          return
+        end
+        successes = 0
+        failures = []
+        if !results.is_a? Array
+          return
+        end
+        results.each { |r|
+          if r["status"] == 202
+            successes += 1
+          else
+            failures[r["status"]] += 1
+          end
+        }
+
+        log.debug "Successfully published #{batch.length} records"
+        if failures.size > 0
+          log.warn "Errors publishing records: #{failures}"
+        end
       end
     end
   end
