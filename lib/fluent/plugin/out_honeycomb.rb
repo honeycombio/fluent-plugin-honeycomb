@@ -9,7 +9,7 @@ module Fluent
 
     # config_param defines a parameter. You can refer a parameter via @path instance variable
     # Without :default, a parameter is required.
-    config_param :writekey, :string
+    config_param :writekey, :string, :secret => true
     config_param :dataset, :string
     config_param :sample_rate, :integer, :default => 1
     config_param :include_tag_key, :bool, :default => false
