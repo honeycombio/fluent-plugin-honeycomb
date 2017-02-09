@@ -85,6 +85,7 @@ module Fluent
     def parse_response(resp)
       if resp.status != 200
         # Force retry
+        log.error "Error sending batch: #{resp.status}, #{resp.body}"
         raise Exception.new("Error sending batch: #{resp.status}, #{resp.body}")
       else
         begin
