@@ -67,7 +67,7 @@ class HoneycombOutput < Test::Unit::TestCase
       {
         "testdataset" => [
           {"data" => {"a" => "b", "c" => 22, "fluentd_tag" => "test"},
-           "samplerate" => 1}
+           "time"=>"2006-01-02T15:04:05+00:00", "samplerate" => 1}
         ]
       }
     ]
@@ -84,7 +84,7 @@ class HoneycombOutput < Test::Unit::TestCase
       {
         "testdataset" => [
           {"data" => {"a" => "b", "c" => 22, "my_custom_tag_key_name" => "test"},
-           "samplerate" => 1}
+           "time"=>"2006-01-02T15:04:05+00:00", "samplerate" => 1}
         ]
       }
     ]
@@ -97,8 +97,10 @@ class HoneycombOutput < Test::Unit::TestCase
     request_bodies = [
       {
         "testdataset" => [
-          {"data" => {"a" => "b", "c" => 22}, "samplerate" => 1},
-          {"data" => {"q" => "r", "s" => "t"}, "samplerate" => 1}
+          {"data" => {"a" => "b", "c" => 22}, "samplerate" => 1,
+           "time"=>"2006-01-02T15:04:05+00:00"},
+          {"data" => {"q" => "r", "s" => "t"}, "samplerate" => 1,
+           "time"=>"2006-01-02T15:04:05+00:00"},
         ]
       }
     ]

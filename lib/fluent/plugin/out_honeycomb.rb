@@ -62,7 +62,8 @@ module Fluent
         end
         batch.push({
             "data" => record,
-            "samplerate" => @sample_rate
+            "samplerate" => @sample_rate,
+            "time" => Time.at(time).utc.to_datetime.rfc3339
         })
       end
 

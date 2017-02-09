@@ -1,4 +1,5 @@
 require 'simplecov'
+require 'timecop'
 SimpleCov.start do
   add_filter do |src|
     !(src.filename =~ /^#{SimpleCov.root}\/lib/)
@@ -10,3 +11,4 @@ require 'fluent/test'
 
 require 'webmock/test_unit'
 WebMock.disable_net_connect!
+Timecop.freeze(Time.utc(2006, 01, 02, 15, 04, 05))
