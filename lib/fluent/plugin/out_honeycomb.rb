@@ -95,20 +95,28 @@ module Fluent
         end
         successes = 0
         failures = []
-        if !results.is_a? Array
-          return
-        end
-        results.each { |r|
-          if r["status"] == 202
-            successes += 1
-          else
-            failures[r["status"]] += 1
+        results.each do |key, statuses|
+          if !statuses.is_a? Array
+            next
           end
-        }
 
-        log.debug "Successfully published #{batch.length} records"
+          statuses.each do |s|
+            if !s.is_a? Hash
+              next
+            end
+
+            if s["status"] == 202
+              successes += 1
+            else
+              failures[r["status"]] += 1
+            end
+          end
+        end
+
         if failures.size > 0
           log.warn "Errors publishing records: #{failures}"
+        else
+          log.debug "Successfully published #{successes} records"
         end
       end
     end
