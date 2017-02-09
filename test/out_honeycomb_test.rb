@@ -31,7 +31,7 @@ class HoneycombOutput < Test::Unit::TestCase
   end
 
   def stub_hny(url="https://api.honeycomb.io/1/batch")
-    body = JSON.dump({"testdataset" => [{"status": 202}]})
+    body = JSON.dump({"testdataset" => [{"status" => 202}]})
     stub_request(:post, url).
       to_return(:status => 200, :body => body).with do |req|
         @events = req.body.split("\n").map {|r| JSON.parse(r) }
