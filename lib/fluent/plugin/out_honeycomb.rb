@@ -60,6 +60,9 @@ module Fluent
         if @include_tag_key
           record[@tag_key] = tag
         end
+        if @sample_rate > 1 && rand(1..@sample_rate) == 1
+          next
+        end
         batch.push({
             "data" => record,
             "samplerate" => @sample_rate,

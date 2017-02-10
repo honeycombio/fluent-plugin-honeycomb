@@ -1,8 +1,5 @@
 require 'date'
 require 'helper'
-#require 'test/unit'
-#require 'fluent/test'
-#require 'webmock/test_unit'
 
 class HoneycombOutput < Test::Unit::TestCase
   attr_accessor :index_cmds, :index_command_counts
@@ -125,4 +122,30 @@ class HoneycombOutput < Test::Unit::TestCase
       driver.run
     end
   end
+
+  def test_sample_rate
+    hny_request = stub_hny()
+    config = defaultconfig + %{
+    sample_rate 2
+    }
+    driver('test', config)
+    (1..10000).each { |i| driver.emit({"a" => i}) }
+    driver.run
+    assert_requested(hny_request)
+    events_sent = @events[0]["testdataset"].length
+    assert 2500 < events_sent && events_sent < 7500
+  end
+
+  def test_sample_rate_when_1
+    hny_request = stub_hny()
+    config = defaultconfig + %{
+    sample_rate 1
+    }
+    driver('test', config)
+    (1..10000).each { |i| driver.emit({"a" => i}) }
+    driver.run
+    assert_requested(hny_request)
+    assert_equal 10000, @events[0]["testdataset"].length
+  end
+
 end
