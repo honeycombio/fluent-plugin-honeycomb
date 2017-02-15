@@ -16,6 +16,7 @@ module Fluent
     config_param :include_tag_key, :bool, :default => false
     config_param :tag_key, :string, :default => "fluentd_tag"
     config_param :api_host, :string, :default => "https://api.honeycomb.io"
+    config_param :flatten_keys, :array, value_type: :string, :default => []
 
     # This method is called before starting.
     # 'conf' is a Hash that includes configuration parameters.
@@ -57,11 +58,16 @@ module Fluent
           log.debug "Skipping record #{record}"
           next
         end
+        if @sample_rate > 1 && rand(1..@sample_rate) == 1
+          next
+        end
         if @include_tag_key
           record[@tag_key] = tag
         end
-        if @sample_rate > 1 && rand(1..@sample_rate) == 1
-          next
+        @flatten_keys.each do |k|
+          next unless record[k].is_a?(Hash)
+          record.merge!(flatten(record[k], k))
+          record.delete(k)
         end
         batch.push({
             "data" => record,
@@ -123,6 +129,18 @@ module Fluent
           log.debug "Successfully published #{successes} records"
         end
       end
+    end
+
+    def flatten(record, prefix)
+      ret = {}
+      if record.is_a? Hash
+        record.each { |key, value|
+          ret.merge! flatten(value, "#{prefix}.#{key.to_s}")
+        }
+      else
+        return {prefix => record}
+      end
+      ret
     end
   end
 end

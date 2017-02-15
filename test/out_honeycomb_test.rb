@@ -42,7 +42,7 @@ class HoneycombOutput < Test::Unit::TestCase
     inputs.each { |i| driver.emit(i) }
     driver.run
     assert_requested(hny_request)
-    assert_equal @events, request_bodies
+    assert_equal request_bodies, @events
   end
 
   def test_configure
@@ -148,4 +148,35 @@ class HoneycombOutput < Test::Unit::TestCase
     assert_equal 10000, @events[0]["testdataset"].length
   end
 
+  def test_no_merging_by_default
+    inputs = [{"a" => "b", "c" => { "d" => 22, "e" => "f"}}]
+    request_bodies = [
+      {
+        "testdataset" => [
+          {"data" => {"a" => "b", "c" => {"d" => 22, "e" => "f"}}, "samplerate" => 1,
+           "time"=>"2006-01-02T15:04:05+00:00"},
+        ]
+      }
+    ]
+    send_helper("", inputs, request_bodies)
+  end
+
+  def test_merging
+    extra_opts = %{flatten_keys ["a"]}
+    inputs = [{"a" => {"b" => "c"}},
+              {"a" => {"b" => "c"}, "d" => {"e" => "f"}},
+              {"a" => {"b" => "c", "g" => {"h" => "j"}}},
+              {"a" => {"b" => [1, 2]}}]
+    request_bodies = [
+      {
+        "testdataset" => [
+          {"data" => {"a.b" => "c"}, "samplerate" => 1, "time"=>"2006-01-02T15:04:05+00:00"},
+          {"data" => {"a.b" => "c", "d" => {"e" => "f"}}, "samplerate" => 1, "time"=>"2006-01-02T15:04:05+00:00"},
+          {"data" => {"a.b" => "c", "a.g.h" => "j"}, "samplerate" => 1, "time"=>"2006-01-02T15:04:05+00:00"},
+          {"data" => {"a.b" => [1, 2]}, "samplerate" => 1, "time"=>"2006-01-02T15:04:05+00:00"},
+        ]
+      }
+    ]
+    send_helper(extra_opts, inputs, request_bodies)
+  end
 end
