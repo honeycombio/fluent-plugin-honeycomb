@@ -80,12 +80,12 @@ module Fluent
         return
       end
       log.info "publishing #{batch.length} records"
-      body = JSON.dump({ @dataset => batch })
+      body = JSON.dump(batch)
       resp = HTTP.headers(
           "User-Agent" => "fluent-plugin-honeycomb",
           "Content-Type" => "application/json",
           "X-Honeycomb-Team" => @writekey)
-          .post(URI.join(@api_host, "/1/batch"), {
+          .post(URI.join(@api_host, "/1/batch/#{@dataset}"), {
               :body => body,
           })
       parse_response(resp)

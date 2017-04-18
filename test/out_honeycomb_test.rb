@@ -27,8 +27,8 @@ class HoneycombOutput < Test::Unit::TestCase
     {"status" => 200,"path" => "/docs/","latency_ms" => 13.1,"cached" => false}
   end
 
-  def stub_hny(url="https://api.honeycomb.io/1/batch")
-    body = JSON.dump({"testdataset" => [{"status" => 202}]})
+  def stub_hny(url="https://api.honeycomb.io/1/batch/testdataset")
+    body = JSON.dump([{"status" => 202}])
     stub_request(:post, url).
       to_return(:status => 200, :body => body).with do |req|
         @events = req.body.split("\n").map {|r| JSON.parse(r) }
@@ -62,12 +62,10 @@ class HoneycombOutput < Test::Unit::TestCase
     extra_opts = "include_tag_key true"
     inputs = [{"a" => "b", "c" => 22}]
     request_bodies = [
-      {
-        "testdataset" => [
+        [
           {"data" => {"a" => "b", "c" => 22, "fluentd_tag" => "test"},
            "time"=>"2006-01-02T15:04:05+00:00", "samplerate" => 1}
         ]
-      }
     ]
     send_helper(extra_opts, inputs, request_bodies)
   end
@@ -79,12 +77,10 @@ class HoneycombOutput < Test::Unit::TestCase
     }
     inputs = [{"a" => "b", "c" => 22}]
     request_bodies = [
-      {
-        "testdataset" => [
+        [
           {"data" => {"a" => "b", "c" => 22, "my_custom_tag_key_name" => "test"},
            "time"=>"2006-01-02T15:04:05+00:00", "samplerate" => 1}
         ]
-      }
     ]
     send_helper(extra_opts, inputs, request_bodies)
   end
@@ -93,14 +89,12 @@ class HoneycombOutput < Test::Unit::TestCase
     inputs = [{"a" => "b", "c" => 22},
               {"q" => "r", "s" => "t"}]
     request_bodies = [
-      {
-        "testdataset" => [
+        [
           {"data" => {"a" => "b", "c" => 22}, "samplerate" => 1,
            "time"=>"2006-01-02T15:04:05+00:00"},
           {"data" => {"q" => "r", "s" => "t"}, "samplerate" => 1,
            "time"=>"2006-01-02T15:04:05+00:00"},
         ]
-      }
     ]
     send_helper("", inputs, request_bodies)
   end
@@ -115,7 +109,7 @@ class HoneycombOutput < Test::Unit::TestCase
 
   def test_retry
     driver('test', defaultconfig)
-    stub_request(:post, "https://api.honeycomb.io/1/batch").
+    stub_request(:post, "https://api.honeycomb.io/1/batch/testdataset").
       to_return(:status => 500)
     driver.emit({"a" => "b"})
     assert_raise Exception do
@@ -132,7 +126,7 @@ class HoneycombOutput < Test::Unit::TestCase
     (1..10000).each { |i| driver.emit({"a" => i}) }
     driver.run
     assert_requested(hny_request)
-    events_sent = @events[0]["testdataset"].length
+    events_sent = @events[0].length
     assert 2500 < events_sent && events_sent < 7500
   end
 
@@ -145,18 +139,16 @@ class HoneycombOutput < Test::Unit::TestCase
     (1..10000).each { |i| driver.emit({"a" => i}) }
     driver.run
     assert_requested(hny_request)
-    assert_equal 10000, @events[0]["testdataset"].length
+    assert_equal 10000, @events[0].length
   end
 
   def test_no_merging_by_default
     inputs = [{"a" => "b", "c" => { "d" => 22, "e" => "f"}}]
     request_bodies = [
-      {
-        "testdataset" => [
+        [
           {"data" => {"a" => "b", "c" => {"d" => 22, "e" => "f"}}, "samplerate" => 1,
            "time"=>"2006-01-02T15:04:05+00:00"},
         ]
-      }
     ]
     send_helper("", inputs, request_bodies)
   end
@@ -168,14 +160,12 @@ class HoneycombOutput < Test::Unit::TestCase
               {"a" => {"b" => "c", "g" => {"h" => "j"}}},
               {"a" => {"b" => [1, 2]}}]
     request_bodies = [
-      {
-        "testdataset" => [
+        [
           {"data" => {"a.b" => "c"}, "samplerate" => 1, "time"=>"2006-01-02T15:04:05+00:00"},
           {"data" => {"a.b" => "c", "d" => {"e" => "f"}}, "samplerate" => 1, "time"=>"2006-01-02T15:04:05+00:00"},
           {"data" => {"a.b" => "c", "a.g.h" => "j"}, "samplerate" => 1, "time"=>"2006-01-02T15:04:05+00:00"},
           {"data" => {"a.b" => [1, 2]}, "samplerate" => 1, "time"=>"2006-01-02T15:04:05+00:00"},
         ]
-      }
     ]
     send_helper(extra_opts, inputs, request_bodies)
   end
