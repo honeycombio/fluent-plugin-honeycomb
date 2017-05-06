@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/honeycombio/fluent-plugin-honeycomb.svg?branch=master)](https://travis-ci.org/honeycombio/fluent-plugin-honeycomb)
 
-Send your logs to [Honeycomb](https://honeycomb.io).
+Send your logs to [Honeycomb](https://honeycomb.io). (For more information about using Honeycomb, see [our docs](https://honeycomb.io/docs/).)
 
 ## Getting started
 
