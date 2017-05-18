@@ -23,15 +23,12 @@ module Fluent
     # If the configuration is invalid, raise Fluent::ConfigError.
     def configure(conf)
       # Apply sane defaults. These override the poor fluentd defaults, but not
-      # anything explicitly specified in the configuratoin
+      # anything explicitly specified in the configuration.
       conf["buffer_chunk_limit"] ||= "500k"
       conf["flush_interval"] ||= "1s"
       conf["max_retry_wait"] ||= "30s"
       conf["retry_limit"] ||= 17
       super
-
-      # You can also refer raw parameter via conf[name].
-      @path = conf['path']
     end
 
     # This method is called when starting.
