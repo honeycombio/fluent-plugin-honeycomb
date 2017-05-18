@@ -22,10 +22,13 @@ module Fluent
     # 'conf' is a Hash that includes configuration parameters.
     # If the configuration is invalid, raise Fluent::ConfigError.
     def configure(conf)
+      # Apply sane defaults. These override the poor fluentd defaults, but not
+      # anything explicitly specified in the configuration.
+      conf["buffer_chunk_limit"] ||= "500k"
+      conf["flush_interval"] ||= "1s"
+      conf["max_retry_wait"] ||= "30s"
+      conf["retry_limit"] ||= 17
       super
-
-      # You can also refer raw parameter via conf[name].
-      @path = conf['path']
     end
 
     # This method is called when starting.
@@ -76,6 +79,10 @@ module Fluent
         })
       end
 
+      publish_batch(batch, 0)
+    end
+
+    def publish_batch(batch, retry_count)
       if batch.length == 0
         return
       end
@@ -88,47 +95,53 @@ module Fluent
           .post(URI.join(@api_host, "/1/batch/#{@dataset}"), {
               :body => body,
           })
-      parse_response(resp)
+      failures = parse_response(batch, resp)
+      if failures.size > 0 && retry_count < @retry_limit
+        # sleep and retry with the set of failed events
+        sleep 1
+        publish_batch(failures, retry_count + 1)
+      end
     end
 
-    def parse_response(resp)
+    def parse_response(batch, resp)
       if resp.status != 200
         # Force retry
         log.error "Error sending batch: #{resp.status}, #{resp.body}"
         raise Exception.new("Error sending batch: #{resp.status}, #{resp.body}")
-      else
-        begin
-          results = JSON.parse(resp.body)
-        rescue JSON::ParserError => e
-          log.warn "Error parsing response as JSON: #{e}"
-          return
-        end
-        successes = 0
-        failures = []
-        results.each do |key, statuses|
-          if !statuses.is_a? Array
-            next
-          end
+      end
 
-          statuses.each do |s|
-            if !s.is_a? Hash
-              next
-            end
+      begin
+        results = JSON.parse(resp.body)
+      rescue JSON::ParserError => e
+        log.warn "Error parsing response as JSON: #{e}"
+        raise e
+      end
+      successes = 0
+      failures = []
+      if !results.is_a? Array
+        log.warning "Unexpected response format: #{results}"
+        raise Exception.new("Unexpected response format: #{resp.status}")
+      end
 
-            if s["status"] == 202
-              successes += 1
-            else
-              failures[r["status"]] += 1
-            end
-          end
+      results.each_with_index do |result, idx|
+        if !result.is_a? Hash
+          log.warning "Unexpected status format in response: #{result}"
+          next
         end
 
-        if failures.size > 0
-          log.warn "Errors publishing records: #{failures}"
+        if result["status"] == 202
+          successes += 1
         else
-          log.debug "Successfully published #{successes} records"
+          failures.push(batch[idx])
         end
       end
+
+      if failures.size > 0
+        log.warn "Errors publishing records: #{failures.size} failures out of #{successes + failures.size}"
+      else
+        log.debug "Successfully published #{successes} records"
+      end
+      return failures
     end
 
     def flatten(record, prefix)

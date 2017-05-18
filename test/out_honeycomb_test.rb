@@ -56,6 +56,27 @@ class HoneycombOutput < Test::Unit::TestCase
     assert_equal 'https://api-alt.honeycomb.io', instance.api_host
     assert_equal 'bananarama', instance.writekey
     assert_equal 'testdataset', instance.dataset
+    assert_equal 512000, instance.buffer_chunk_limit
+    assert_equal 1, instance.flush_interval
+    assert_equal 30, instance.max_retry_wait
+    assert_equal 17, instance.retry_limit
+  end
+
+  def test_configure_overrides
+    config = %{
+      api_host     https://api-alt.honeycomb.io
+      writekey bananarama
+      dataset  testdataset
+      buffer_chunk_limit 1m
+      flush_interval 22s
+      max_retry_wait 1m
+      retry_limit 30
+    }
+    instance = driver('test', config).instance
+    assert_equal 1024 * 1024, instance.buffer_chunk_limit
+    assert_equal 22, instance.flush_interval
+    assert_equal 60, instance.max_retry_wait
+    assert_equal 30, instance.retry_limit
   end
 
   def test_send_with_fluentd_tag_key
@@ -107,7 +128,7 @@ class HoneycombOutput < Test::Unit::TestCase
     assert_not_requested(hny_request)
   end
 
-  def test_retry
+  def test_retry_on_all
     driver('test', defaultconfig)
     stub_request(:post, "https://api.honeycomb.io/1/batch/testdataset").
       to_return(:status => 500)
@@ -115,6 +136,32 @@ class HoneycombOutput < Test::Unit::TestCase
     assert_raise Exception do
       driver.run
     end
+  end
+
+  def test_retry_on_some
+    # Test plugin-internal retry handling of responses where some (but not
+    # all) events were rejected. We do this by stubbing the response to be
+    # [{status: 202}, {status: 429}, {status: 429}, ...],
+    # rejecting all but the first event. We then send a batch of ten events and
+    # make sure that each event is ultimately (after retrying) accepted exactly
+    # once.
+    @received_events = []
+    driver('test', defaultconfig)
+    responses = []
+    (0..10).each do |i|
+      body = [{status: 202}].concat([{status: 429}] * (10 - i))
+      responses.push({status: 200, body: JSON.dump(body)})
+    end
+    stub_request(:post, "https://api.honeycomb.io/1/batch/testdataset").
+      to_return(responses).with do |req|
+        fields = JSON.parse(req.body)
+        @received_events.push(fields[0])
+      end
+
+    submitted_events = (0..10).map { |i| {"key" => i} }
+    submitted_events.each { |ev| driver.emit(ev) }
+    driver.run
+    assert_equal(submitted_events, @received_events.map{ |ev| ev["data"] })
   end
 
   def test_sample_rate
