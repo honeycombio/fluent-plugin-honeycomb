@@ -97,6 +97,8 @@ module Fluent
           })
       failures = parse_response(batch, resp)
       if failures.size > 0 && retry_count < @retry_limit
+        # sleep and retry with the set of failed events
+        sleep 1
         publish_batch(failures, retry_count + 1)
       end
     end
