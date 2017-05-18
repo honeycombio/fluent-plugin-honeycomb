@@ -58,5 +58,5 @@ Travis will automatically upload tagged releases to Rubygems. To release a new
 version, run
 ```
 bump patch --tag   # Or bump minor --tag, etc.
-git push --tags
+git push --follow-tags
 ```
