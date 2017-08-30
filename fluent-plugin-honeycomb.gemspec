@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name        = 'fluent-plugin-honeycomb'
-  spec.version     = '0.4.1'
+  spec.version     = '0.4.2'
 
   spec.summary     = "Fluentd output plugin for Honeycomb.io"
   spec.description = "Fluentd output plugin for Honeycomb.io"
