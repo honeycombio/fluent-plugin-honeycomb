@@ -17,6 +17,7 @@ module Fluent
     config_param :tag_key, :string, :default => "fluentd_tag"
     config_param :api_host, :string, :default => "https://api.honeycomb.io"
     config_param :flatten_keys, :array, value_type: :string, :default => []
+    config_param :dataset_from_key, :string, :default => ""
 
     # This method is called before starting.
     # 'conf' is a Hash that includes configuration parameters.
@@ -55,7 +56,7 @@ module Fluent
     #
     # NOTE! This method is called by internal thread, not Fluentd's main thread. So IO wait doesn't affect other plugins.
     def write(chunk)
-      batch = []
+      batches =  Hash.new{ |h, k| h[k] = [] }
       chunk.msgpack_each do |(tag, time, record)|
         if !record.is_a? Hash
           log.debug "Skipping record #{record}"
@@ -72,6 +73,14 @@ module Fluent
           record.merge!(flatten(record[k], k))
           record.delete(k)
         end
+
+        if (@dataset_from_key != "" && record.has_key?(@dataset_from_key))
+          dataset = record[@dataset_from_key]
+          record.delete @dataset_from_key
+        else
+          dataset = @dataset
+        end
+        batch = batches[dataset]
         batch.push({
             "data" => record,
             "samplerate" => @sample_rate,
@@ -79,27 +88,29 @@ module Fluent
         })
       end
 
-      publish_batch(batch, 0)
+      batches.each do |dataset, batch|
+        publish_batch(dataset, batch, 0)
+      end
     end
 
-    def publish_batch(batch, retry_count)
+    def publish_batch(dataset, batch, retry_count)
       if batch.length == 0
         return
       end
-      log.info "publishing #{batch.length} records"
+      log.info "publishing #{batch.length} records to dataset #{dataset}"
       body = JSON.dump(batch)
       resp = HTTP.headers(
           "User-Agent" => "fluent-plugin-honeycomb",
           "Content-Type" => "application/json",
           "X-Honeycomb-Team" => @writekey)
-          .post(URI.join(@api_host, "/1/batch/#{@dataset}"), {
+          .post(URI.join(@api_host, "/1/batch/#{dataset}"), {
               :body => body,
           })
       failures = parse_response(batch, resp)
       if failures.size > 0 && retry_count < @retry_limit
         # sleep and retry with the set of failed events
         sleep 1
-        publish_batch(failures, retry_count + 1)
+        publish_batch(dataset, failures, retry_count + 1)
       end
     end
 

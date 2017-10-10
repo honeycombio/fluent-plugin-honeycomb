@@ -27,9 +27,8 @@ Parameter | Type | Required? | Description
 | `sample_rate` | integer | no | Sample your event stream by sending 1 out of every N events. |
 | `include_tag_key` | bool | no | Whether to include the Fluentd tag in the submitted event. |
 | `tag_key` | string | no | If `include_tag_key` is `true`, the tag key name in the event (default: `fluentd_tag`).
-| `flatten_keys` | array | no | Flatten nested JSON data under these keys into
-the top-level event.
-
+| `flatten_keys` | array | no | Flatten nested JSON data under these keys into the top-level event.
+| `dataset_from_key` | string | no | Look for this key in each event, and use its value as the destination dataset. If an event doesn't contain the key, it'll be sent to the dataset given by the `dataset` parameter.
 
 ### Buffering options
 
