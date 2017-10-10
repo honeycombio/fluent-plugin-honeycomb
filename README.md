@@ -54,8 +54,13 @@ A note about naming: This gem must be named `fluent-plugin-xxx` in order to auto
 
 ## Releasing a new version
 Travis will automatically upload tagged releases to Rubygems. To release a new
-version, run
-```
-bump patch --tag   # Or bump minor --tag, etc.
-git push --follow-tags
-```
+version:
+
+1. Update the value of `HONEYCOMB_PLUGIN_VERSION` in
+   lib/plugin/out_honeycomb_version.rb`
+
+2. Run
+    ```
+    bump patch --tag   # Or bump minor --tag, etc.
+    git push --follow-tags
+    ```

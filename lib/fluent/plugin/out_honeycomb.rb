@@ -1,6 +1,7 @@
 require 'json'
 require 'http'
 require 'fluent/output'
+require_relative 'out_honeycomb_version'
 
 module Fluent
   class HoneycombOutput < BufferedOutput
@@ -100,7 +101,7 @@ module Fluent
       log.info "publishing #{batch.length} records to dataset #{dataset}"
       body = JSON.dump(batch)
       resp = HTTP.headers(
-          "User-Agent" => "fluent-plugin-honeycomb",
+          "User-Agent" => "fluent-plugin-honeycomb/#{HONEYCOMB_PLUGIN_VERSION}",
           "Content-Type" => "application/json",
           "X-Honeycomb-Team" => @writekey)
           .post(URI.join(@api_host, "/1/batch/#{dataset}"), {
