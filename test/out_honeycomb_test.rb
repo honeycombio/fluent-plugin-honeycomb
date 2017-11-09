@@ -169,16 +169,27 @@ class HoneycombOutput < Test::Unit::TestCase
   end
 
   def test_sample_rate
+    num_tests = 10000
+    sample_rate = 4
+
+    rand_returns = (1..sample_rate).to_a * (num_tests.to_f / sample_rate).ceil
+
+    # Stub out rand call inside HomecombOutput, return array of
+    # all potential values in order (1, 2, 3, 4, 1 ....)
+    Fluent::HoneycombOutput.any_instance.expects(:rand)
+      .at_least(num_tests)
+      .returns(*rand_returns)
+
     hny_request, events = stub_hny()
     config = defaultconfig + %{
-    sample_rate 2
+    sample_rate #{sample_rate}
     }
     driver('test', config)
-    (1..10000).each { |i| driver.emit({"a" => i}) }
+    (1..num_tests).each { |i| driver.emit({"a" => i}) }
     driver.run
     assert_requested(hny_request)
     events_sent = events["testdataset"].length
-    assert 2500 < events_sent && events_sent < 7500
+    assert events_sent == num_tests / sample_rate
   end
 
   def test_sample_rate_when_1
