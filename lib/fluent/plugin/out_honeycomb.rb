@@ -63,7 +63,7 @@ module Fluent
           log.debug "Skipping record #{record}"
           next
         end
-        if @sample_rate > 1 && rand(1..@sample_rate) == 1
+        if @sample_rate > 1 && rand(1..@sample_rate) > 1
           next
         end
         if @include_tag_key
