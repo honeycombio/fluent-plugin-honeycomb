@@ -8,6 +8,7 @@ end
 
 require 'test/unit'
 require 'fluent/test'
+require "mocha/test_unit"
 
 require 'webmock/test_unit'
 WebMock.disable_net_connect!
