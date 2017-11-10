@@ -67,6 +67,12 @@ module Fluent
 
         if @presampled_key && record.include?(@presampled_key)
           sample_rate = record.delete(@presampled_key)
+
+          if !sample_rate.is_a?(Integer) || sample_rate < 1
+            log.warn "Record emitted a presampled key (#{@presampled_key} = #{sample_rate}), but was not a valid sample rate #{record}"
+
+            sample_rate = 1
+          end
         else
           sample_rate = @sample_rate
 
