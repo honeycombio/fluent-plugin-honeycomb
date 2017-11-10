@@ -310,4 +310,37 @@ class HoneycombOutput < Test::Unit::TestCase
 
     send_helper(extra_opts, inputs, request_bodies)
   end
+
+  def test_presampled_key_bad_value
+    extra_opts = %{
+      presampled_key sample_rate
+      sample_rate 2
+    }
+
+    Fluent::HoneycombOutput.any_instance.expects(:rand)
+      .once
+      .returns(1)
+
+    inputs = [
+      {"a" => 1, "sample_rate" => 8},
+      {"a" => 2, "sample_rate" => "foo"},
+      {"a" => 3, "sample_rate" => -3},
+      {"a" => 4, "sample_rate" => 4.8},
+      {"a" => 5, "sample_rate" => nil},
+      {"a" => 6, "sample_rate" => []},
+      {"a" => 7},
+    ]
+
+    request_bodies = {"testdataset" => [
+      {"data" => {"a" => 1}, "samplerate" => 8, "time" => "2006-01-02T15:04:05+00:00"},
+      {"data" => {"a" => 2}, "samplerate" => 1, "time" => "2006-01-02T15:04:05+00:00"},
+      {"data" => {"a" => 3}, "samplerate" => 1, "time" => "2006-01-02T15:04:05+00:00"},
+      {"data" => {"a" => 4}, "samplerate" => 1, "time" => "2006-01-02T15:04:05+00:00"},
+      {"data" => {"a" => 5}, "samplerate" => 1, "time" => "2006-01-02T15:04:05+00:00"},
+      {"data" => {"a" => 6}, "samplerate" => 1, "time" => "2006-01-02T15:04:05+00:00"},
+      {"data" => {"a" => 7}, "samplerate" => 2, "time" => "2006-01-02T15:04:05+00:00"},
+    ]}
+
+    send_helper(extra_opts, inputs, request_bodies)
+  end
 end
