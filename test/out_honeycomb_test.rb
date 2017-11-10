@@ -257,4 +257,26 @@ class HoneycombOutput < Test::Unit::TestCase
 
     send_helper(extra_opts, inputs, request_bodies)
   end
+
+  def test_presampled_key
+    extra_opts = %{presampled_key sample_rate}
+
+    inputs = [
+      {"a" => 1, "sample_rate" => 10},
+      {"a" => 2, "sample_rate" => 4},
+      {"a" => 3},
+      {"a" => 4, "sample_rate" => 2},
+      {"a" => 5},
+    ]
+
+    request_bodies = {"testdataset" => [
+      {"data" => {"a" => 1}, "samplerate" => 10, "time" => "2006-01-02T15:04:05+00:00"},
+      {"data" => {"a" => 2}, "samplerate" => 4, "time" => "2006-01-02T15:04:05+00:00"},
+      {"data" => {"a" => 3}, "samplerate" => 1, "time" => "2006-01-02T15:04:05+00:00"},
+      {"data" => {"a" => 4}, "samplerate" => 2, "time" => "2006-01-02T15:04:05+00:00"},
+      {"data" => {"a" => 5}, "samplerate" => 1, "time" => "2006-01-02T15:04:05+00:00"},
+    ]}
+
+    send_helper(extra_opts, inputs, request_bodies)
+  end
 end
