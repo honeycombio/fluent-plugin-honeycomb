@@ -19,6 +19,7 @@ module Fluent
     config_param :api_host, :string, :default => "https://api.honeycomb.io"
     config_param :flatten_keys, :array, value_type: :string, :default => []
     config_param :dataset_from_key, :string, :default => ""
+    config_param :presampled_key, :string, :default => nil
 
     # This method is called before starting.
     # 'conf' is a Hash that includes configuration parameters.
@@ -63,9 +64,17 @@ module Fluent
           log.debug "Skipping record #{record}"
           next
         end
-        if @sample_rate > 1 && rand(1..@sample_rate) > 1
-          next
+
+        if @presampled_key && record.include?(@presampled_key)
+          sample_rate = record.delete(@presampled_key)
+        else
+          sample_rate = @sample_rate
+
+          if @sample_rate > 1 && rand(1..@sample_rate) > 1
+            next
+          end
         end
+
         if @include_tag_key
           record[@tag_key] = tag
         end
@@ -84,7 +93,7 @@ module Fluent
         batch = batches[dataset]
         batch.push({
             "data" => record,
-            "samplerate" => @sample_rate,
+            "samplerate" => sample_rate,
             "time" => Time.at(time).utc.to_datetime.rfc3339
         })
       end
