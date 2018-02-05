@@ -86,7 +86,7 @@ class HoneycombOutput < Test::Unit::TestCase
     }
 
     instance = driver('test', config).instance
-    if Gem.loaded_specs['fluentd'].version > Gem::Version.new('0.12.42')
+    if Gem.loaded_specs['fluentd'].version > Gem::Version.new('0.12')
       assert_equal 1024 * 1024, instance.buffer_chunk_limit
     else
       assert_equal 1024 * 1024, instance.buffer.buffer_chunk_limit
