@@ -64,7 +64,7 @@ class HoneycombOutput < Test::Unit::TestCase
     # Workaround for old version of fluentd, e.g., the one installed with
     # OpenShift:
     # https://github.com/openshift/origin-aggregated-logging/blob/618b949e8188a2c1116e5e9fa1a8b849ea0c736b/fluentd/Dockerfile.centos7#L6
-    if Gem.loaded_specs['fluentd'].version > Gem::Version.new('0.12.42')
+    if Gem.loaded_specs['fluentd'].version >= Gem::Version.new('0.13')
       assert_equal 512000, instance.buffer_chunk_limit
     else
       assert_equal 512000, instance.buffer.buffer_chunk_limit
@@ -86,7 +86,7 @@ class HoneycombOutput < Test::Unit::TestCase
     }
 
     instance = driver('test', config).instance
-    if Gem.loaded_specs['fluentd'].version > Gem::Version.new('0.12.42')
+    if Gem.loaded_specs['fluentd'].version >= Gem::Version.new('0.13')
       assert_equal 1024 * 1024, instance.buffer_chunk_limit
     else
       assert_equal 1024 * 1024, instance.buffer.buffer_chunk_limit
