@@ -147,12 +147,21 @@ class HoneycombOutput < Test::Unit::TestCase
 
   def test_retry_on_all
     driver('test', defaultconfig)
+    @received_events = []
+    # first request should fail, second should succeed
+    responses = [
+      {status: 500},
+      {status: 200, body: JSON.dump([{status: 202}])}
+    ]
     stub_request(:post, "https://api.honeycomb.io/1/batch/testdataset").
-      to_return(:status => 500)
+      to_return(responses).with do |req|
+        fields = JSON.parse(req.body)
+        @received_events.push(fields[0])
+      end
     driver.emit({"a" => "b"})
-    assert_raise Exception do
-      driver.run
-    end
+    driver.run
+    # should get called twice
+    assert_equal([{"a" => "b"}, {"a" => "b"}] , @received_events.map{ |ev| ev["data"] })
   end
 
   def test_retry_on_some
