@@ -60,7 +60,9 @@ version:
 1. Update the value of `HONEYCOMB_PLUGIN_VERSION` in
    lib/plugin/out_honeycomb_version.rb`
 
-2. Run
+2. Update `spec.version` in `fluent-plugin-honeycomb.gemspec`.
+
+3. Run
     ```
     bump patch --tag   # Or bump minor --tag, etc.
     git push --follow-tags
