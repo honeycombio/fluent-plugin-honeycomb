@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name        = 'fluent-plugin-honeycomb'
-  spec.version     = '0.7.1'
+  spec.version     = '0.7.2'
 
   spec.summary     = "Fluentd output plugin for Honeycomb.io"
   spec.description = "Fluentd output plugin for Honeycomb.io"
@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = '>= 2.0.0'
 
-  spec.add_runtime_dependency "fluentd", "~> 0.12"
+  spec.add_runtime_dependency "fluentd", ">= 0.12"
   spec.add_runtime_dependency "http", "< 3"
 
   spec.add_development_dependency "bundler", "~> 1.7"
