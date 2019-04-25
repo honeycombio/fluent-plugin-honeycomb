@@ -1,11 +1,33 @@
 language: ruby
-
 rvm:
   - 2.0
   - 2.1
   - 2.2
-  - 2.3.1
-
+  - 2.3
+  - 2.4
+  - 2.5
+gemfile:
+  - gemfiles/fluentd_0.12.gemfile
+  - gemfiles/fluentd_0.14.gemfile
+  - gemfiles/fluentd_1.0.gemfile
+  - gemfiles/fluentd_1.1.gemfile
+  - gemfiles/fluentd_1.2.gemfile
+  - gemfiles/fluentd_1.3.gemfile
+  - gemfiles/fluentd_1.4.gemfile
+matrix:
+  exclude:
+    - rvm: 2.0
+      gemfile: gemfiles/fluentd_0.14.gemfile
+    - rvm: 2.0
+      gemfile: gemfiles/fluentd_1.0.gemfile
+    - rvm: 2.0
+      gemfile: gemfiles/fluentd_1.1.gemfile
+    - rvm: 2.0
+      gemfile: gemfiles/fluentd_1.2.gemfile
+    - rvm: 2.0
+      gemfile: gemfiles/fluentd_1.3.gemfile
+    - rvm: 2.0
+      gemfile: gemfiles/fluentd_1.4.gemfile
 deploy:
   provider: rubygems
   api_key:
