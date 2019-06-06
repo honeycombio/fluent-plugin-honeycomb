@@ -138,7 +138,7 @@ module Fluent
       end
 
       begin
-        results = JSON.parse(resp.body)
+        results = JSON.parse(resp.body.to_s)
       rescue JSON::ParserError => e
         log.warn "Error parsing response as JSON: #{e}"
         raise e
