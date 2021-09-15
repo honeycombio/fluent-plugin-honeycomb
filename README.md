@@ -1,7 +1,6 @@
 # fluent-plugin-honeycomb
 
 [![OSS Lifecycle](https://img.shields.io/osslifecycle/honeycombio/fluent-plugin-honeycomb)](https://github.com/honeycombio/home/blob/main/honeycomb-oss-lifecycle-and-practices.md)
-[![Build Status](https://travis-ci.org/honeycombio/fluent-plugin-honeycomb.svg?branch=master)](https://travis-ci.org/honeycombio/fluent-plugin-honeycomb)
 
 Send your logs to [Honeycomb](https://honeycomb.io). (For more information about using Honeycomb, see [our docs](https://honeycomb.io/docs/).)
 
