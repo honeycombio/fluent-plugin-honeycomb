@@ -1,8 +1,12 @@
 # fluent-plugin-honeycomb
 
-[![OSS Lifecycle](https://img.shields.io/osslifecycle/honeycombio/fluent-plugin-honeycomb?color=pink)](https://github.com/honeycombio/home/blob/main/honeycomb-oss-lifecycle-and-practices.md)
+[![OSS Lifecycle](https://img.shields.io/osslifecycle/honeycombio/fluent-plugin-honeycomb)](https://github.com/honeycombio/home/blob/main/honeycomb-oss-lifecycle-and-practices.md)
 
-**STATUS: this project is being sunset.** [See https://github.com/honeycombio/fluent-plugin-honeycomb/issues/30](https://github.com/honeycombio/fluent-plugin-honeycomb/issues/30)
+**STATUS: this project is [archived](https://github.com/honeycombio/home/blob/main/honeycomb-oss-lifecycle-and-practices.md).** You can learn about connecting Fluentd to Honeycomb in our [docs](https://docs.honeycomb.io/getting-data-in/logs/log-collectors/fluentd/).
+
+Questions? You can chat with us in the **Honeycomb Pollinators** Slack. You can find a direct link to request an invite in [Spread the Love: Appreciating Our Pollinators Community](https://www.honeycomb.io/blog/spread-the-love-appreciating-our-pollinators-community/).
+
+---
 
 Send your logs to [Honeycomb](https://honeycomb.io). (For more information about using Honeycomb, see [our docs](https://honeycomb.io/docs/).)
 
